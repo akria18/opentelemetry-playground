@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: otel-config-playground
+  namespace: otel-playground
+  labels:
+    app.kubernetes.io/name: otel-config-playground
+    app.kubernetes.io/component: ingress
+  annotations:
+    # Uncomment and configure based on your ingress controller
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+spec:
+  # Uncomment for TLS
+  # tls:
+  #   - hosts:
+  #       - otel-playground.example.com
+  #     secretName: otel-playground-tls
+  rules:
+    - host: otel-playground.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: otel-config-playground
+                port:
+                  name: http

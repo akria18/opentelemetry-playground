@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otel-playground
+  labels:
+    app.kubernetes.io/name: otel-config-playground
+    app.kubernetes.io/component: namespace

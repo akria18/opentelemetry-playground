@@ -1,0 +1,319 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Terminal/CLI Aesthetic Theme
+ * Design Philosophy: Developer-focused, dark-by-default interface
+ * inspired by terminal interfaces and VS Code aesthetics.
+ * - Deep charcoal backgrounds for reduced eye strain
+ * - Electric cyan for active elements and flow connections
+ * - Neon green for success states, bright red for errors
+ * - Monospace typography for code-first experience
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Custom colors for OTel components */
+  --color-receiver: oklch(0.75 0.18 180);
+  --color-processor: oklch(0.75 0.18 280);
+  --color-exporter: oklch(0.75 0.18 145);
+  --color-connector: oklch(0.75 0.18 45);
+  --color-extension: oklch(0.65 0.15 220);
+  --color-flow: oklch(0.78 0.15 195);
+}
+
+:root {
+  --radius: 0.5rem;
+  /* Terminal dark theme - default */
+  --background: oklch(0.13 0.01 250);
+  --foreground: oklch(0.92 0.01 250);
+  --card: oklch(0.16 0.01 250);
+  --card-foreground: oklch(0.92 0.01 250);
+  --popover: oklch(0.18 0.01 250);
+  --popover-foreground: oklch(0.92 0.01 250);
+  --primary: oklch(0.78 0.15 195);
+  --primary-foreground: oklch(0.13 0.01 250);
+  --secondary: oklch(0.22 0.01 250);
+  --secondary-foreground: oklch(0.85 0.01 250);
+  --muted: oklch(0.25 0.01 250);
+  --muted-foreground: oklch(0.65 0.02 250);
+  --accent: oklch(0.22 0.02 250);
+  --accent-foreground: oklch(0.92 0.01 250);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0.01 0);
+  --border: oklch(0.28 0.01 250);
+  --input: oklch(0.22 0.01 250);
+  --ring: oklch(0.78 0.15 195);
+  --chart-1: oklch(0.78 0.15 195);
+  --chart-2: oklch(0.72 0.19 145);
+  --chart-3: oklch(0.75 0.18 280);
+  --chart-4: oklch(0.75 0.18 45);
+  --chart-5: oklch(0.65 0.15 220);
+  --sidebar: oklch(0.14 0.01 250);
+  --sidebar-foreground: oklch(0.92 0.01 250);
+  --sidebar-primary: oklch(0.78 0.15 195);
+  --sidebar-primary-foreground: oklch(0.13 0.01 250);
+  --sidebar-accent: oklch(0.22 0.02 250);
+  --sidebar-accent-foreground: oklch(0.92 0.01 250);
+  --sidebar-border: oklch(0.28 0.01 250);
+  --sidebar-ring: oklch(0.78 0.15 195);
+}
+
+.dark {
+  --background: oklch(0.13 0.01 250);
+  --foreground: oklch(0.92 0.01 250);
+  --card: oklch(0.16 0.01 250);
+  --card-foreground: oklch(0.92 0.01 250);
+  --popover: oklch(0.18 0.01 250);
+  --popover-foreground: oklch(0.92 0.01 250);
+  --primary: oklch(0.78 0.15 195);
+  --primary-foreground: oklch(0.13 0.01 250);
+  --secondary: oklch(0.22 0.01 250);
+  --secondary-foreground: oklch(0.85 0.01 250);
+  --muted: oklch(0.25 0.01 250);
+  --muted-foreground: oklch(0.65 0.02 250);
+  --accent: oklch(0.22 0.02 250);
+  --accent-foreground: oklch(0.92 0.01 250);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0.01 0);
+  --border: oklch(0.28 0.01 250);
+  --input: oklch(0.22 0.01 250);
+  --ring: oklch(0.78 0.15 195);
+  --chart-1: oklch(0.78 0.15 195);
+  --chart-2: oklch(0.72 0.19 145);
+  --chart-3: oklch(0.75 0.18 280);
+  --chart-4: oklch(0.75 0.18 45);
+  --chart-5: oklch(0.65 0.15 220);
+  --sidebar: oklch(0.14 0.01 250);
+  --sidebar-foreground: oklch(0.92 0.01 250);
+  --sidebar-primary: oklch(0.78 0.15 195);
+  --sidebar-primary-foreground: oklch(0.13 0.01 250);
+  --sidebar-accent: oklch(0.22 0.02 250);
+  --sidebar-accent-foreground: oklch(0.92 0.01 250);
+  --sidebar-border: oklch(0.28 0.01 250);
+  --sidebar-ring: oklch(0.78 0.15 195);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1920px;
+    }
+  }
+
+  /* Terminal-style glow effects */
+  .glow-cyan {
+    box-shadow: 0 0 10px oklch(0.78 0.15 195 / 0.3),
+                0 0 20px oklch(0.78 0.15 195 / 0.2),
+                0 0 30px oklch(0.78 0.15 195 / 0.1);
+  }
+
+  .glow-green {
+    box-shadow: 0 0 10px oklch(0.72 0.19 145 / 0.3),
+                0 0 20px oklch(0.72 0.19 145 / 0.2);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 10px oklch(0.65 0.22 25 / 0.3),
+                0 0 20px oklch(0.65 0.22 25 / 0.2);
+  }
+
+  /* Pulse animation for active elements */
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Flow animation for pipeline connections */
+  @keyframes flow {
+    0% {
+      stroke-dashoffset: 24;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-flow {
+    stroke-dasharray: 6 6;
+    animation: flow 1s linear infinite;
+  }
+
+  /* Error shake animation */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+  }
+
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  /* Typing cursor effect */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .cursor-blink::after {
+    content: '▋';
+    animation: blink 1s step-end infinite;
+    color: oklch(0.78 0.15 195);
+  }
+
+  /* Node type colors */
+  .node-receiver {
+    border-color: oklch(0.75 0.18 180);
+    background: oklch(0.75 0.18 180 / 0.1);
+  }
+
+  .node-processor {
+    border-color: oklch(0.75 0.18 280);
+    background: oklch(0.75 0.18 280 / 0.1);
+  }
+
+  .node-exporter {
+    border-color: oklch(0.72 0.19 145);
+    background: oklch(0.72 0.19 145 / 0.1);
+  }
+
+  .node-connector {
+    border-color: oklch(0.75 0.18 45);
+    background: oklch(0.75 0.18 45 / 0.1);
+  }
+
+  .node-extension {
+    border-color: oklch(0.65 0.15 220);
+    background: oklch(0.65 0.15 220 / 0.1);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: oklch(0.16 0.01 250);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0.01 250);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.45 0.01 250);
+  }
+
+  /* Monaco editor overrides */
+  .monaco-editor {
+    border-radius: 0.5rem;
+  }
+
+  .monaco-editor .margin {
+    background: oklch(0.14 0.01 250) !important;
+  }
+
+  /* React Flow customizations */
+  .react-flow__node {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .react-flow__edge-path {
+    stroke-width: 2;
+  }
+
+  .react-flow__background {
+    background-color: oklch(0.13 0.01 250);
+  }
+}
