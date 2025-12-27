@@ -142,6 +142,14 @@ otel-config-playground/
 └── README.md
 ```
 
+
+## Next steps:
+
+1- Add connector support: Extend the parser to visualize connectors that link pipelines together (e.g., forward connector, count connector )
+
+2- Add config templates: Include a dropdown with common OTel configurations (Jaeger, Prometheus, OTLP) for quick starting points
+
+
 ## Contributing
 
 1. Fork the repository
