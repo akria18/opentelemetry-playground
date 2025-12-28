@@ -6,7 +6,6 @@ A web-based playground for testing and visualizing OpenTelemetry Collector confi
 
 ## Features
 
-- **YAML Editor**: Monaco-based editor with syntax highlighting and error markers
 - **Pipeline Visualization**: Interactive flow diagram showing receivers → processors → exporters
 - **Real-time Validation**: Instant feedback on configuration errors and warnings
 - **Error Highlighting**: Click on errors to jump to the relevant line in the editor
@@ -79,7 +78,7 @@ Update the following files before deployment:
 ├─────────────────────┬───────────────────────────────────────┤
 │                     │                                       │
 │   YAML Editor       │   Pipeline Visualization              │
-│   (Monaco)          │   (React Flow)                        │
+│                     │   (React Flow)                        │
 │                     │                                       │
 │   ┌─────────────┐   │   ┌─────┐   ┌─────┐   ┌─────┐        │
 │   │ receivers:  │   │   │ RCV │──▶│ PRC │──▶│ EXP │        │
