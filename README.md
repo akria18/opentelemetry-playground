@@ -108,7 +108,6 @@ The playground validates:
 ## Tech Stack
 
 - **Frontend**: React 19, TypeScript, Tailwind CSS 4
-- **Editor**: Monaco Editor
 - **Visualization**: React Flow
 - **YAML Parsing**: yaml (js-yaml alternative)
 - **Build**: Vite
