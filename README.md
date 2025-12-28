@@ -2,7 +2,7 @@
 
 A web-based playground for testing and visualizing OpenTelemetry Collector configurations. Paste your YAML config, see the pipeline visualization, and get instant validation feedback with error highlighting.
 
-![OTel Config Playground](docs/screenshot.png)
+![OTel Config Playground](docs/otel-config-playground.png)
 
 ## Features
 
