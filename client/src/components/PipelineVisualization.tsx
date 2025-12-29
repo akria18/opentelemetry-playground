@@ -3,6 +3,7 @@
  * 
  * Renders OpenTelemetry pipelines as a flow diagram using React Flow.
  * Shows data flow from receivers through processors to exporters.
+ * Supports connectors that link pipelines together.
  */
 
 import { useCallback, useMemo, useEffect } from 'react';
@@ -21,7 +22,7 @@ import {
 import '@xyflow/react/dist/style.css';
 
 import { nodeTypes } from './PipelineNode';
-import type { ParseResult, OTelPipeline, ValidationError } from '@/lib/otel-parser';
+import type { ParseResult, OTelPipeline, ValidationError, OTelComponent } from '@/lib/otel-parser';
 
 // Use Record<string, unknown> for node data to satisfy React Flow types
 type FlowNodeData = Record<string, unknown>;
@@ -32,6 +33,11 @@ interface PipelineVisualizationProps {
   onNodeClick?: (nodeId: string, componentType: string) => void;
 }
 
+// Check if a component name is a connector
+function isConnector(name: string, connectors: OTelComponent[]): boolean {
+  return connectors.some(c => c.fullName === name);
+}
+
 // Generate nodes and edges from parse result
 function generateFlowElements(
   parseResult: ParseResult,
@@ -39,6 +45,7 @@ function generateFlowElements(
 ): { nodes: FlowNode[]; edges: Edge[] } {
   const nodes: FlowNode[] = [];
   const edges: Edge[] = [];
+  let edgeCounter = 0; // Counter to ensure unique edge IDs
   
   const errorPaths = new Set(errors.map(e => e.path).filter(Boolean));
   
@@ -48,6 +55,9 @@ function generateFlowElements(
   const LABEL_OFFSET_Y = -40;
   const START_X = 50;
   const START_Y = 100;
+  
+  // Track connector nodes for cross-pipeline connections
+  const connectorNodes: Map<string, { nodeId: string; pipelineId: string; role: 'exporter' | 'receiver' }[]> = new Map();
   
   // Process each pipeline independently - each pipeline gets its own nodes
   parseResult.pipelines.forEach((pipeline: OTelPipeline, pipelineIndex: number) => {
@@ -73,7 +83,10 @@ function generateFlowElements(
     pipeline.receivers.forEach((receiverName) => {
       const nodeId = `${pipeline.id}-receiver-${receiverName}`;
       const receiver = parseResult.receivers.find(r => r.fullName === receiverName);
+      const connector = parseResult.connectors.find(c => c.fullName === receiverName);
+      const isConnectorNode = isConnector(receiverName, parseResult.connectors);
       const hasError = errorPaths.has(`receivers.${receiverName}`) || 
+                       errorPaths.has(`connectors.${receiverName}`) ||
                        errors.some(e => e.message.includes(`"${receiverName}"`));
       
       nodes.push({
@@ -83,11 +96,20 @@ function generateFlowElements(
         data: {
           label: receiverName,
           fullName: receiverName,
-          componentType: 'receiver',
+          componentType: isConnectorNode ? 'connector' : 'receiver',
           hasError,
-          config: receiver?.config,
+          config: connector?.config || receiver?.config,
+          isConnector: isConnectorNode,
         },
       });
+      
+      // Track connector for cross-pipeline edges
+      if (isConnectorNode) {
+        if (!connectorNodes.has(receiverName)) {
+          connectorNodes.set(receiverName, []);
+        }
+        connectorNodes.get(receiverName)!.push({ nodeId, pipelineId: pipeline.id, role: 'receiver' });
+      }
       
       prevNodeId = nodeId;
       currentX += NODE_SPACING_X;
@@ -115,7 +137,7 @@ function generateFlowElements(
       
       if (prevNodeId) {
         edges.push({
-          id: `edge-${prevNodeId}-${nodeId}`,
+          id: `edge-${edgeCounter++}-${prevNodeId}-${nodeId}`,
           source: prevNodeId,
           target: nodeId,
           animated: true,
@@ -132,7 +154,10 @@ function generateFlowElements(
     pipeline.exporters.forEach((exporterName) => {
       const nodeId = `${pipeline.id}-exporter-${exporterName}`;
       const exporter = parseResult.exporters.find(e => e.fullName === exporterName);
+      const connector = parseResult.connectors.find(c => c.fullName === exporterName);
+      const isConnectorNode = isConnector(exporterName, parseResult.connectors);
       const hasError = errorPaths.has(`exporters.${exporterName}`) ||
+                       errorPaths.has(`connectors.${exporterName}`) ||
                        errors.some(e => e.message.includes(`"${exporterName}"`));
       
       nodes.push({
@@ -142,20 +167,29 @@ function generateFlowElements(
         data: {
           label: exporterName,
           fullName: exporterName,
-          componentType: 'exporter',
+          componentType: isConnectorNode ? 'connector' : 'exporter',
           hasError,
-          config: exporter?.config,
+          config: connector?.config || exporter?.config,
+          isConnector: isConnectorNode,
         },
       });
       
+      // Track connector for cross-pipeline edges
+      if (isConnectorNode) {
+        if (!connectorNodes.has(exporterName)) {
+          connectorNodes.set(exporterName, []);
+        }
+        connectorNodes.get(exporterName)!.push({ nodeId, pipelineId: pipeline.id, role: 'exporter' });
+      }
+      
       if (prevNodeId) {
         edges.push({
-          id: `edge-${prevNodeId}-${nodeId}`,
+          id: `edge-${edgeCounter++}-${prevNodeId}-${nodeId}`,
           source: prevNodeId,
           target: nodeId,
           animated: true,
-          style: { stroke: '#10b981', strokeWidth: 2 },
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#10b981' },
+          style: { stroke: isConnectorNode ? '#f59e0b' : '#10b981', strokeWidth: 2 },
+          markerEnd: { type: MarkerType.ArrowClosed, color: isConnectorNode ? '#f59e0b' : '#10b981' },
         });
       }
       
@@ -174,15 +208,16 @@ function generateFlowElements(
       if (firstTargetId) {
         pipeline.receivers.forEach((receiverName, idx) => {
           const sourceId = `${pipeline.id}-receiver-${receiverName}`;
+          const isConnectorNode = isConnector(receiverName, parseResult.connectors);
           // Only connect if this is the last receiver (to avoid duplicate edges)
           if (idx === pipeline.receivers.length - 1) {
             edges.push({
-              id: `edge-${sourceId}-${firstTargetId}`,
+              id: `edge-${edgeCounter++}-${sourceId}-${firstTargetId}`,
               source: sourceId,
               target: firstTargetId,
               animated: true,
-              style: { stroke: '#22d3ee', strokeWidth: 2 },
-              markerEnd: { type: MarkerType.ArrowClosed, color: '#22d3ee' },
+              style: { stroke: isConnectorNode ? '#f59e0b' : '#22d3ee', strokeWidth: 2 },
+              markerEnd: { type: MarkerType.ArrowClosed, color: isConnectorNode ? '#f59e0b' : '#22d3ee' },
             });
           }
         });
@@ -190,9 +225,92 @@ function generateFlowElements(
     }
   });
   
+  // Add cross-pipeline connector edges (from exporter to receiver)
+  connectorNodes.forEach((nodeList, connectorName) => {
+    const exporters = nodeList.filter(n => n.role === 'exporter');
+    const receivers = nodeList.filter(n => n.role === 'receiver');
+    
+    // Connect each exporter to each receiver of the same connector
+    exporters.forEach(exp => {
+      receivers.forEach(rec => {
+        if (exp.pipelineId !== rec.pipelineId) {
+          edges.push({
+            id: `edge-${edgeCounter++}-connector-${connectorName}-${exp.pipelineId}-${rec.pipelineId}`,
+            source: exp.nodeId,
+            target: rec.nodeId,
+            animated: true,
+            style: { 
+              stroke: '#f59e0b', 
+              strokeWidth: 2,
+              strokeDasharray: '5,5',
+            },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#f59e0b' },
+            label: connectorName,
+            labelStyle: { fill: '#f59e0b', fontSize: 10, fontFamily: 'monospace' },
+            labelBgStyle: { fill: '#1f2937', fillOpacity: 0.9 },
+            labelBgPadding: [4, 4] as [number, number],
+            labelBgBorderRadius: 4,
+          });
+        }
+      });
+    });
+  });
+  
+  // Add connectors section if any exist (standalone connectors not in pipelines)
+  const usedConnectors = new Set<string>();
+  parseResult.pipelines.forEach(p => {
+    p.receivers.forEach(r => {
+      if (isConnector(r, parseResult.connectors)) usedConnectors.add(r);
+    });
+    p.exporters.forEach(e => {
+      if (isConnector(e, parseResult.connectors)) usedConnectors.add(e);
+    });
+  });
+  
+  const unusedConnectors = parseResult.connectors.filter(c => !usedConnectors.has(c.fullName));
+  
+  if (unusedConnectors.length > 0) {
+    const connectorY = START_Y + parseResult.pipelines.length * PIPELINE_SPACING + 30;
+    let connectorX = START_X;
+    
+    // Add connectors label
+    nodes.push({
+      id: 'label-connectors',
+      type: 'pipelineLabel',
+      position: { x: START_X - 30, y: connectorY + LABEL_OFFSET_Y },
+      data: {
+        label: 'Connectors',
+        pipelineType: 'traces',
+      },
+      draggable: false,
+      selectable: false,
+    });
+    
+    unusedConnectors.forEach((connector) => {
+      const hasError = errorPaths.has(`connectors.${connector.fullName}`) ||
+                       errors.some(e => e.message.includes(`"${connector.fullName}"`));
+      
+      nodes.push({
+        id: `connector-${connector.fullName}`,
+        type: 'pipeline',
+        position: { x: connectorX, y: connectorY },
+        data: {
+          label: connector.fullName,
+          fullName: connector.fullName,
+          componentType: 'connector',
+          hasError,
+          config: connector.config,
+          isConnector: true,
+        },
+      });
+      connectorX += NODE_SPACING_X;
+    });
+  }
+  
   // Add extensions as a separate row if any exist
   if (parseResult.extensions.length > 0) {
-    const extensionY = START_Y + parseResult.pipelines.length * PIPELINE_SPACING + 30;
+    const extensionY = START_Y + parseResult.pipelines.length * PIPELINE_SPACING + 
+                       (unusedConnectors.length > 0 ? PIPELINE_SPACING : 0) + 30;
     let extensionX = START_X;
     
     // Add extensions label
@@ -262,7 +380,7 @@ export function PipelineVisualization({ parseResult, onNodeClick }: PipelineVisu
     [onNodeClick]
   );
   
-  if (parseResult.pipelines.length === 0 && parseResult.extensions.length === 0) {
+  if (parseResult.pipelines.length === 0 && parseResult.extensions.length === 0 && parseResult.connectors.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground font-mono">
         <div className="text-center">

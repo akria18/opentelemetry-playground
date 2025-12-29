@@ -22,12 +22,22 @@ import {
   Github,
   Zap,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Loader2,
+  Server,
+  Code
 } from 'lucide-react';
 import { PipelineVisualization } from '@/components/PipelineVisualization';
 import { ErrorConsole } from '@/components/ErrorConsole';
+import { TemplateSelector } from '@/components/TemplateSelector';
 import { parseOTelConfig, sampleConfig, type ParseResult } from '@/lib/otel-parser';
+import { useOtelValidation } from '@/hooks/useOtelValidation';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Initial empty parse result
 const emptyParseResult: ParseResult = {
@@ -50,15 +60,36 @@ export default function Home() {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   
-  // Parse configuration on content change
+  // API validation hook
+  const { 
+    isValidating, 
+    validateConfig, 
+    isBinaryAvailable, 
+    binaryVersion,
+    validationMode,
+    isStatusLoading 
+  } = useOtelValidation();
+  
+  // Parse configuration on content change (client-side for instant feedback)
   const handleEditorChange = useCallback((value: string | undefined) => {
     const content = value || '';
     setYamlContent(content);
     
-    // Debounce parsing
+    // Client-side parsing for instant visualization
     const result = parseOTelConfig(content);
     setParseResult(result);
   }, []);
+  
+  // Full validation with binary (on button click)
+  const handleValidate = useCallback(async () => {
+    const { parseResult: newResult, binaryResult } = await validateConfig(yamlContent);
+    setParseResult(newResult);
+    
+    // Log binary validation details
+    if (binaryResult.binaryVersion) {
+      console.log(`[OTel] Validated with otelcol ${binaryResult.binaryVersion}`);
+    }
+  }, [yamlContent, validateConfig]);
   
   // Handle editor mount
   const handleEditorMount = useCallback((
@@ -135,6 +166,12 @@ export default function Home() {
     setParseResult(parseOTelConfig(sampleConfig));
   }, []);
   
+  // Load template
+  const handleSelectTemplate = useCallback((config: string) => {
+    setYamlContent(config);
+    setParseResult(parseOTelConfig(config));
+  }, []);
+  
   // Download configuration
   const handleDownload = useCallback(() => {
     const blob = new Blob([yamlContent], { type: 'text/yaml' });
@@ -178,11 +215,48 @@ export default function Home() {
             </h1>
           </div>
           <span className="text-xs text-muted-foreground font-mono px-2 py-0.5 bg-muted rounded">
-            v1.0
+            v2.0
           </span>
+          
+          {/* Validation mode indicator */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={cn(
+                "flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono",
+                isBinaryAvailable 
+                  ? "bg-emerald-500/20 text-emerald-400" 
+                  : "bg-amber-500/20 text-amber-400"
+              )}>
+                {isStatusLoading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : isBinaryAvailable ? (
+                  <Server className="w-3 h-3" />
+                ) : (
+                  <Code className="w-3 h-3" />
+                )}
+                <span>{validationMode === 'binary' ? 'Binary' : 'Fallback'}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="font-mono text-xs">
+              {isBinaryAvailable ? (
+                <div>
+                  <p className="font-semibold">otelcol binary validation</p>
+                  <p className="text-muted-foreground">Version: {binaryVersion || 'unknown'}</p>
+                  <p className="text-muted-foreground">Full component validation enabled</p>
+                </div>
+              ) : (
+                <div>
+                  <p className="font-semibold">Fallback validation</p>
+                  <p className="text-muted-foreground">otelcol binary not available</p>
+                  <p className="text-muted-foreground">Using structural validation only</p>
+                </div>
+              )}
+            </TooltipContent>
+          </Tooltip>
         </div>
         
         <div className="flex items-center gap-2">
+          <TemplateSelector onSelectTemplate={handleSelectTemplate} />
           <Button
             variant="ghost"
             size="sm"
@@ -212,7 +286,7 @@ export default function Home() {
           </Button>
           <div className="w-px h-6 bg-border mx-1" />
           <a
-            href="https://github.com"
+            href="https://github.com/akria18/otel-config-playground"
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -245,11 +319,21 @@ export default function Home() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => setParseResult(parseOTelConfig(yamlContent))}
+                  onClick={handleValidate}
+                  disabled={isValidating}
                   className="font-mono text-xs h-7"
                 >
-                  <Play className="w-3 h-3 mr-1.5" />
-                  Validate
+                  {isValidating ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                      Validating...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3 h-3 mr-1.5" />
+                      Validate
+                    </>
+                  )}
                 </Button>
               </div>
               
@@ -313,6 +397,10 @@ export default function Home() {
                         <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                         <span>Exporters</span>
                       </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                        <span>Connectors</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -357,6 +445,8 @@ export default function Home() {
                       errors={parseResult.errors}
                       isValid={parseResult.isValid}
                       onErrorClick={handleErrorClick}
+                      validationMode={validationMode}
+                      binaryVersion={binaryVersion}
                     />
                   </div>
                 </div>

@@ -2,7 +2,7 @@
  * Pipeline Node Components for React Flow
  * 
  * Terminal/CLI Aesthetic: Monospace typography, glow effects,
- * color-coded by component type.
+ * color-coded by component type with configuration tooltips.
  */
 
 import { Handle, Position } from '@xyflow/react';
@@ -13,8 +13,14 @@ import {
   Send, 
   Link2, 
   Puzzle,
-  AlertCircle
+  AlertCircle,
+  Info
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export type ComponentType = 'receiver' | 'processor' | 'exporter' | 'connector' | 'extension';
 
@@ -24,6 +30,7 @@ export interface PipelineNodeData {
   componentType: ComponentType;
   hasError?: boolean;
   isActive?: boolean;
+  isConnector?: boolean;
   config?: Record<string, unknown>;
 }
 
@@ -77,6 +84,74 @@ const typeConfig: Record<ComponentType, {
   },
 };
 
+// Format config value for display
+function formatConfigValue(value: unknown, depth = 0): string {
+  if (value === null || value === undefined) return 'null';
+  if (typeof value === 'string') return `"${value}"`;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '[]';
+    if (value.length <= 3 && value.every(v => typeof v !== 'object')) {
+      return `[${value.map(v => formatConfigValue(v, depth + 1)).join(', ')}]`;
+    }
+    return `[${value.length} items]`;
+  }
+  if (typeof value === 'object') {
+    const keys = Object.keys(value);
+    if (keys.length === 0) return '{}';
+    if (depth > 1) return `{${keys.length} keys}`;
+    return keys.slice(0, 5).map(k => `${k}: ${formatConfigValue((value as Record<string, unknown>)[k], depth + 1)}`).join('\n');
+  }
+  return String(value);
+}
+
+// Render config as formatted list
+function ConfigTooltipContent({ config, componentType, fullName }: { 
+  config?: Record<string, unknown>; 
+  componentType: ComponentType;
+  fullName: string;
+}) {
+  const typeInfo = typeConfig[componentType];
+  
+  return (
+    <div className="max-w-xs">
+      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/50">
+        <typeInfo.icon className={cn('w-4 h-4', typeInfo.colorClass)} />
+        <span className={cn('font-semibold', typeInfo.colorClass)}>{typeInfo.label}</span>
+      </div>
+      <div className="font-mono text-xs mb-2">
+        <span className="text-muted-foreground">Name: </span>
+        <span className="text-foreground">{fullName}</span>
+      </div>
+      
+      {config && Object.keys(config).length > 0 ? (
+        <div className="space-y-1">
+          <div className="text-xs text-muted-foreground mb-1">Configuration:</div>
+          <div className="font-mono text-xs space-y-0.5 max-h-48 overflow-y-auto">
+            {Object.entries(config).slice(0, 10).map(([key, value]) => (
+              <div key={key} className="flex gap-2">
+                <span className="text-purple-400 shrink-0">{key}:</span>
+                <span className="text-emerald-400 break-all whitespace-pre-wrap">
+                  {formatConfigValue(value)}
+                </span>
+              </div>
+            ))}
+            {Object.keys(config).length > 10 && (
+              <div className="text-muted-foreground italic">
+                ...and {Object.keys(config).length - 10} more
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="text-xs text-muted-foreground italic">
+          No configuration options
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface PipelineNodeProps {
   data: PipelineNodeData;
   selected?: boolean;
@@ -85,90 +160,95 @@ interface PipelineNodeProps {
 export function PipelineNode({ data, selected }: PipelineNodeProps) {
   const config = typeConfig[data.componentType];
   const Icon = config.icon;
+  const hasConfig = data.config && Object.keys(data.config).length > 0;
   
   return (
-    <div
-      className={cn(
-        'relative px-4 py-3 rounded-lg border-2 min-w-[160px] max-w-[220px]',
-        'font-mono text-sm transition-all duration-200',
-        config.borderColor,
-        config.bgColor,
-        selected && `shadow-lg ${config.glowColor}`,
-        data.hasError && 'border-red-500/70 bg-red-500/10',
-        data.isActive && 'animate-pulse-glow'
-      )}
-    >
-      {/* Input handle for processors and exporters */}
-      {(data.componentType === 'processor' || data.componentType === 'exporter') && (
-        <Handle
-          type="target"
-          position={Position.Left}
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
+        <div
           className={cn(
-            'w-3 h-3 !bg-slate-600 border-2',
-            config.borderColor
+            'relative px-4 py-3 rounded-lg border-2 min-w-[160px] max-w-[220px]',
+            'font-mono text-sm transition-all duration-200 cursor-pointer',
+            config.borderColor,
+            config.bgColor,
+            selected && `shadow-lg ${config.glowColor}`,
+            data.hasError && 'border-red-500/70 bg-red-500/10',
+            data.isActive && 'animate-pulse-glow',
+            data.isConnector && 'border-dashed'
           )}
-        />
-      )}
-      
-      {/* Output handle for receivers and processors */}
-      {(data.componentType === 'receiver' || data.componentType === 'processor') && (
-        <Handle
-          type="source"
-          position={Position.Right}
-          className={cn(
-            'w-3 h-3 !bg-slate-600 border-2',
-            config.borderColor
+        >
+          {/* Input handle for processors, exporters, and connectors */}
+          {(data.componentType === 'processor' || data.componentType === 'exporter' || data.componentType === 'connector') && (
+            <Handle
+              type="target"
+              position={Position.Left}
+              className={cn(
+                'w-3 h-3 !bg-slate-600 border-2',
+                config.borderColor
+              )}
+            />
           )}
-        />
-      )}
-      
-      {/* Connector has both handles */}
-      {data.componentType === 'connector' && (
-        <>
-          <Handle
-            type="target"
-            position={Position.Left}
+          
+          {/* Output handle for receivers, processors, and connectors */}
+          {(data.componentType === 'receiver' || data.componentType === 'processor' || data.componentType === 'connector') && (
+            <Handle
+              type="source"
+              position={Position.Right}
+              className={cn(
+                'w-3 h-3 !bg-slate-600 border-2',
+                config.borderColor
+              )}
+            />
+          )}
+          
+          {/* Header with icon and type label */}
+          <div className="flex items-center gap-2 mb-1">
+            <Icon className={cn('w-4 h-4', config.colorClass)} />
+            <span className={cn('text-xs uppercase tracking-wider', config.colorClass)}>
+              {config.label}
+            </span>
+            {data.hasError && (
+              <AlertCircle className="w-4 h-4 text-red-400 ml-auto" />
+            )}
+            {!data.hasError && hasConfig && (
+              <Info className="w-3 h-3 text-muted-foreground ml-auto opacity-50" />
+            )}
+          </div>
+          
+          {/* Component name */}
+          <div className="text-foreground font-medium truncate" title={data.fullName}>
+            {data.fullName}
+          </div>
+          
+          {/* Connector indicator */}
+          {data.isConnector && (
+            <div className="absolute -top-2 -right-2 px-1.5 py-0.5 bg-amber-500 text-amber-950 text-[10px] font-bold rounded">
+              ⟷
+            </div>
+          )}
+          
+          {/* Subtle glow effect */}
+          <div 
             className={cn(
-              'w-3 h-3 !bg-slate-600 border-2',
-              config.borderColor
+              'absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 pointer-events-none',
+              selected && 'opacity-100',
+              `shadow-[0_0_15px_rgba(0,0,0,0.3)] ${config.glowColor}`
             )}
           />
-          <Handle
-            type="source"
-            position={Position.Right}
-            className={cn(
-              'w-3 h-3 !bg-slate-600 border-2',
-              config.borderColor
-            )}
-          />
-        </>
-      )}
-      
-      {/* Header with icon and type label */}
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className={cn('w-4 h-4', config.colorClass)} />
-        <span className={cn('text-xs uppercase tracking-wider', config.colorClass)}>
-          {config.label}
-        </span>
-        {data.hasError && (
-          <AlertCircle className="w-4 h-4 text-red-400 ml-auto" />
-        )}
-      </div>
-      
-      {/* Component name */}
-      <div className="text-foreground font-medium truncate" title={data.fullName}>
-        {data.fullName}
-      </div>
-      
-      {/* Subtle glow effect */}
-      <div 
-        className={cn(
-          'absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 pointer-events-none',
-          selected && 'opacity-100',
-          `shadow-[0_0_15px_rgba(0,0,0,0.3)] ${config.glowColor}`
-        )}
-      />
-    </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent 
+        side="right" 
+        className="bg-card border-border p-3"
+        sideOffset={10}
+      >
+        <ConfigTooltipContent 
+          config={data.config} 
+          componentType={data.componentType}
+          fullName={data.fullName}
+        />
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

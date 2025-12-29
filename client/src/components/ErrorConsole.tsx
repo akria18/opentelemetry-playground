@@ -6,16 +6,24 @@
  */
 
 import { cn } from '@/lib/utils';
-import { AlertCircle, AlertTriangle, CheckCircle2, Terminal } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Terminal, Server, Code } from 'lucide-react';
 import type { ValidationError } from '@/lib/otel-parser';
 
 interface ErrorConsoleProps {
   errors: ValidationError[];
   isValid: boolean;
   onErrorClick?: (line?: number) => void;
+  validationMode?: 'binary' | 'fallback' | string;
+  binaryVersion?: string | null;
 }
 
-export function ErrorConsole({ errors, isValid, onErrorClick }: ErrorConsoleProps) {
+export function ErrorConsole({ 
+  errors, 
+  isValid, 
+  onErrorClick,
+  validationMode = 'fallback',
+  binaryVersion 
+}: ErrorConsoleProps) {
   const errorCount = errors.filter(e => e.severity === 'error').length;
   const warningCount = errors.filter(e => e.severity === 'warning').length;
   
@@ -101,6 +109,21 @@ export function ErrorConsole({ errors, isValid, onErrorClick }: ErrorConsoleProp
             </div>
           </div>
         )}
+        
+        {/* Validation mode info */}
+        <div className="flex items-center gap-2 px-2 py-1 mt-2 text-muted-foreground/60 text-xs">
+          {validationMode === 'binary' ? (
+            <>
+              <Server className="w-3 h-3" />
+              <span>Validated with otelcol{binaryVersion ? ` v${binaryVersion}` : ''}</span>
+            </>
+          ) : (
+            <>
+              <Code className="w-3 h-3" />
+              <span>Validated with fallback parser (structural validation only)</span>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
