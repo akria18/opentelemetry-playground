@@ -2,6 +2,8 @@
 
 A web-based playground for testing and visualizing OpenTelemetry Collector configurations. Paste your YAML config, see the pipeline visualization, and get real-time validation with error highlighting.
 
+![OTel Config Playground_image](docs/otel-config-playground.png)
+
 ![OTel Config Playground](https://img.shields.io/badge/OTel-Config%20Playground-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
