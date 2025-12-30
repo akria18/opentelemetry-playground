@@ -38,8 +38,8 @@ When running in Docker with the otelcol binary included, you get full validation
 
 ```bash
 # Clone the repository
-git clone https://github.com/akria18/otel-config-playground.git
-cd otel-config-playground
+git clone https://github.com/akria18/opentelemetry-playground.git
+cd opentelemetry-playground
 
 # Install dependencies
 pnpm install
