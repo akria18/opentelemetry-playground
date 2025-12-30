@@ -194,6 +194,48 @@ The playground validates:
 - **Testing**: Vitest
 - **Deployment**: Docker, Kubernetes
 
+## Release Management
+
+This project uses automated release management with:
+
+- **[Conventional Commits](https://www.conventionalcommits.org/)** - Standardized commit messages
+- **[Release Please](https://github.com/googleapis/release-please)** - Automated versioning and changelog
+- **GitHub Actions** - CI/CD for testing, building, and publishing
+
+### Creating a Release
+
+1. Merge PRs to `main` using conventional commit messages
+2. Release Please automatically creates a Release PR
+3. Merge the Release PR to trigger:
+   - GitHub Release creation
+   - Docker image build and push to GHCR
+   - Changelog update
+
+### Docker Images
+
+Docker images are published to GitHub Container Registry:
+
+```bash
+# Pull the latest version
+docker pull ghcr.io/akria18/opentelemetry-playground:latest
+
+# Pull a specific version
+docker pull ghcr.io/akria18/opentelemetry-playground:1.0.0
+```
+
+### Commit Convention
+
+| Type | Description | Version Bump |
+|------|-------------|---------------|
+| `feat` | New feature | Minor |
+| `fix` | Bug fix | Patch |
+| `feat!` | Breaking change | Major |
+| `docs` | Documentation | None |
+| `chore` | Maintenance | None |
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+
 ## Contributing
 
 1. Fork the repository
