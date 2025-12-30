@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/akria18/opentelemetry-playground/compare/opentelemetry-playground-v1.1.0...opentelemetry-playground-v1.2.0) (2025-12-30)
+
+
+### Features
+
+* add the ability to use otelcol binary and fallback mecanism ([c75eaf5](https://github.com/akria18/opentelemetry-playground/commit/c75eaf5b8a1398343a7ea3acc1291cb0ee8a0796))
+* cleanup and add ignores ([c53de97](https://github.com/akria18/opentelemetry-playground/commit/c53de97089056a2507c2e1180bc62080497c9c90))
+* improve ci and push new version ([1e5ea6d](https://github.com/akria18/opentelemetry-playground/commit/1e5ea6d500f544575604ae2bfbe275faba3532c9))
+* Initial implementation of OTel Config Playground ([76146ff](https://github.com/akria18/opentelemetry-playground/commit/76146ffa27395e59c4b28c25c6a81325190e207f))
+
+
+### Documentation
+
+* add next steps to add to Otel Playground ([2d804e6](https://github.com/akria18/opentelemetry-playground/commit/2d804e6c53d6cc1ddec9b2e4dde05be2dc6dbbb0))
+* add otel config playground image ([9041c97](https://github.com/akria18/opentelemetry-playground/commit/9041c97f0fb135488e8427693ea26aad4593de2e))
+* fix wrong version ([77fef58](https://github.com/akria18/opentelemetry-playground/commit/77fef58eef28d91c04c39be71d06193774bdc3cc))
+* fix wrong version ([f229181](https://github.com/akria18/opentelemetry-playground/commit/f229181c17842743d2826bc49069e5ba788c0a50))
+
 ## [1.1.0](https://github.com/akria18/opentelemetry-playground/compare/otel-config-playground-v1.0.0...otel-config-playground-v1.1.0) (2025-12-30)
 
 
