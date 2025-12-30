@@ -1,4 +1,4 @@
-# Contributing to OTel Config Playground
+# Contributing to OpenTelemetry Playground
 
 Thank you for your interest in contributing! This document provides guidelines and instructions for contributing to this project.
 
@@ -14,8 +14,8 @@ Thank you for your interest in contributing! This document provides guidelines a
 
 ```bash
 # Clone the repository
-git clone https://github.com/akria18/otel-config-playground.git
-cd otel-config-playground
+git clone https://github.com/akria18/opentelemetry-playground.git
+cd opentelemetry-playground
 
 # Install dependencies
 pnpm install
@@ -143,10 +143,10 @@ pnpm test --watch
 
 ```bash
 # Build locally
-docker build -t otel-config-playground .
+docker build -t opentelemetry-playground .
 
 # Run locally
-docker run -p 3000:3000 otel-config-playground
+docker run -p 3000:3000 opentelemetry-playground
 ```
 
 ## Questions?

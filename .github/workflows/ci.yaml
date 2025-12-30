@@ -102,6 +102,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: otel-config-playground:test
+          tags: opentelemetry-playground:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
