@@ -286,7 +286,7 @@ export default function Home() {
           </Button>
           <div className="w-px h-6 bg-border mx-1" />
           <a
-            href="https://github.com/akria18/otel-config-playground"
+            href="https://github.com/akria18/opentelemetry-playground"
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 text-muted-foreground hover:text-foreground transition-colors"
