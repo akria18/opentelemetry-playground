@@ -27,7 +27,7 @@ RUN apk add --no-cache curl ca-certificates
 
 # Download otelcol binary (contrib version for more components)
 # Using otelcol-contrib which includes all standard receivers, processors, exporters
-ARG OTELCOL_VERSION=0.92.0
+ARG OTELCOL_VERSION=0.142.0
 ARG TARGETARCH=amd64
 
 RUN curl -fsSL "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTELCOL_VERSION}/otelcol-contrib_${OTELCOL_VERSION}_linux_${TARGETARCH}.tar.gz" \
